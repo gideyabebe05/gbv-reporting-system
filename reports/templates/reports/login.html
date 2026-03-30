@@ -1,0 +1,27 @@
+
+<div class="form-container">
+    <div class="form-card">
+        <div class="form-header">
+            <span class="icon">🔑</span>
+            <h1>Organization Login</h1>
+            <p class="subtitle">Access case management dashboard</p>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            {{ form.as_p }}
+            
+            <button type="submit" class="submit-btn">
+                Login Securely
+            </button>
+        </form>
+
+        <div class="text-center mt-6">
+            <p class="text-sm text-gray-500">
+                Only authorized support organizations can access this area.<br>
+                <span class="text-green-700">Confidential • Secure</span>
+            </p>
+        </div>
+    </div>
+</div>

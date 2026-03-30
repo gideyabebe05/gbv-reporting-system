@@ -1,0 +1,35 @@
+/* ====================== LOGIN & RESOURCES PAGE ====================== */
+.resource-card {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s;
+}
+
+.resource-card:hover {
+    transform: translateY(-8px);
+}
+
+.resource-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.resource-card h3 {
+    font-size: 1.5rem;
+    color: #166534;
+    margin-bottom: 10px;
+}
+
+.resource-list {
+    list-style: none;
+    margin-top: 15px;
+}
+
+.resource-list li {
+    padding: 6px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 0.95rem;
+}
