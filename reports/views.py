@@ -1,29 +1,35 @@
-def submit_report(request):
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Report, Resource
+from .forms import ReportForm
+
+
+def report_form(request):
+    """Anonymous GBV Reporting Page"""
     if request.method == 'POST':
-        incident_type = request.POST.get('incident_type')
-        description = request.POST.get('description')
-        location = request.POST.get('location')
+        form = ReportForm(request.POST)
+        if form.is_valid():
+            report = form.save(commit=False)
+            if report.is_anonymous:
+                report.name = None
+                report.phone = None
+            report.save()
 
-        is_anonymous = request.POST.get('is_anonymous') == 'on'
+            messages.success(request, f'✅ Report submitted successfully! Your tracking ID is: {report.tracking_id}')
+            return render(request, 'reports/success.html', {'tracking_id': report.tracking_id})
+    else:
+        form = ReportForm()
 
-        name = request.POST.get('name')
-        phone = request.POST.get('phone')
+    return render(request, 'reports/report_form.html', {'form': form})
 
-        if is_anonymous:
-            name = "Anonymous"
-            phone = None
 
-        report = Report.objects.create(
-            incident_type=incident_type,
-            description=description,
-            location=location,
-            is_anonymous=is_anonymous,
-            name=name,
-            phone=phone
-        )
+def report_list(request):
+    """Case management for organizations"""
+    reports = Report.objects.all().order_by('-created_at')
+    return render(request, 'reports/report_list.html', {'reports': reports})
 
-        return render(request, 'reports/success.html', {
-            'tracking_id': report.tracking_id
-        })
 
-    return redirect('report_form')
+def resources_view(request):
+    """Support resources page"""
+    resources = Resource.objects.filter(is_active=True)
+    return render(request, 'reports/resources.html', {'resources': resources})

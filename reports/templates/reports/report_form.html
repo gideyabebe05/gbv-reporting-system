@@ -1,19 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Report GBV Incident - Tigray</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; padding: 20px; }
+        label { display: block; margin: 15px 0 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 10px; margin-bottom: 15px; }
+        button { background: #d32f2f; color: white; padding: 12px 30px; font-size: 16px; border: none; cursor: pointer; }
+        button:hover { background: #b71c1c; }
+    </style>
+</head>
+<body>
+    <h1>🛡️ Secure GBV Reporting System - Tigray</h1>
+    <p><strong>Anonymous and Confidential</strong></p>
 
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
 
-<div class="form-container">
-    <div class="form-card">
-        <div class="form-header">
-            <span class="icon">🛡️</span>
-            <h1>Report Gender-Based Violence</h1>
-            <p class="subtitle">Your report is 100% anonymous and confidential</p>
-        </div>
+        <button type="submit">Submit Report Securely</button>
+    </form>
 
-        <form method="POST">
-            
-            
-            <button type="submit" class="submit-btn">
-                Submit Report Securely
-            </button>
-        </form>
-    </div>
-</div>
+    <p style="margin-top: 30px; font-size: 0.9em;">
+        Your report will be assigned a unique Tracking ID.<br>
+        All data is encrypted and protected.
+    </p>
+</body>
+</html>

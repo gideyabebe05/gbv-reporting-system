@@ -1,7 +1,7 @@
- from django.contrib import admin
+from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('reports.urls')),   # this connects everything
+    path('', include('reports.urls')),   # This will connect all your report pages
 ]
