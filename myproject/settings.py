@@ -100,3 +100,10 @@ SECURE_SSL_REDIRECT = False  # Change to True when deploying with HTTPS
 SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
+# ====================== STATIC FILES FOR DEPLOYMENT ======================
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Create the folder if it doesn't exist (optional but recommended)
+import os
+if not os.path.exists(STATIC_ROOT):
+    os.makedirs(STATIC_ROOT)
