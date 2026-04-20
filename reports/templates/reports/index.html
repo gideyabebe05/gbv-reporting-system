@@ -1,0 +1,71 @@
+{% extends 'reports/base.html' %}
+
+{% block title %}Tigray GBV Support System{% endblock %}
+
+{% block content %}
+<!-- Hero Section - Improved Visibility -->
+<section class="hero-bg text-white py-24 relative">
+    <!-- Dark overlay for better text visibility -->
+    <div class="absolute inset-0 bg-black/40"></div>
+    
+    <div class="max-w-7xl mx-auto px-6 text-center relative z-10">
+        <h1 class="text-5xl md:text-6xl font-bold leading-tight mb-6 drop-shadow-md">
+            You are not alone.
+        </h1>
+        <h2 class="text-3xl md:text-4xl font-semibold text-teal-200 mb-8 drop-shadow-md">
+            We are here to help.
+        </h2>
+        
+        <p class="text-xl max-w-2xl mx-auto mb-12 text-teal-100 font-medium">
+            A secure and confidential platform for survivors and witnesses of Gender-Based Violence in Tigray.
+        </p>
+        
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="/report/" 
+               class="bg-white text-teal-700 font-semibold px-10 py-5 rounded-3xl text-lg hover:bg-teal-100 transition flex items-center justify-center gap-2 shadow-lg">
+                📄 Report an Incident
+            </a>
+            <a href="/resources/" 
+               class="border-2 border-white text-white font-semibold px-10 py-5 rounded-3xl text-lg hover:bg-white hover:text-teal-700 transition">
+                📍 Find Support
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Features -->
+<section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="grid md:grid-cols-3 gap-10">
+            <div class="text-center">
+                <div class="text-6xl mb-6">🛡️</div>
+                <h3 class="font-semibold text-2xl mb-3">Anonymous Reporting</h3>
+                <p class="text-gray-600">Report safely without revealing your identity. Your privacy is our priority.</p>
+            </div>
+            <div class="text-center">
+                <div class="text-6xl mb-6">📞</div>
+                <h3 class="font-semibold text-2xl mb-3">Direct Support</h3>
+                <p class="text-gray-600">Connect instantly with medical, legal, and counseling services.</p>
+            </div>
+            <div class="text-center">
+                <div class="text-6xl mb-6">🔍</div>
+                <h3 class="font-semibold text-2xl mb-3">Case Tracking</h3>
+                <p class="text-gray-600">Track your report progress using your unique Tracking ID.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="bg-teal-700 text-white py-20 text-center">
+    <div class="max-w-2xl mx-auto px-6">
+        <h2 class="text-4xl font-bold mb-4">Need Immediate Help?</h2>
+        <p class="text-teal-100 mb-10 text-lg">Our 24/7 helplines and support organizations are ready to assist you.</p>
+        <a href="/resources/" 
+           class="inline-block bg-white text-teal-700 px-12 py-5 rounded-3xl text-xl font-semibold hover:bg-teal-100 transition">
+            View All Support Resources
+        </a>
+    </div>
+</section>
+{% endblock %}
+

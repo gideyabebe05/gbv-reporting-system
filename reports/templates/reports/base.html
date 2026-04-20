@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Tigray GBV Support{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        .navbar { background: linear-gradient(90deg, #0f766e, #134e4a); }
+        .toast { animation: slideUp 0.3s ease; }
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+<!-- Professional Navbar -->
+<nav class="navbar text-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-red-600 rounded-2xl flex items-center justify-center text-white text-3xl shadow-inner">🛡️</div>
+            <h1 class="text-2xl font-bold text-red-600">Tigray GBV Support</h1>
+        </div>
+
+        <div class="hidden md:flex items-center gap-8 text-sm font-medium">
+            <a href="/report/" class="hover:text-red-200 flex items-center gap-1">📄 Report Incident</a>
+            <a href="/track/" class="hover:text-red-200 flex items-center gap-1">🔍 Track Report</a>
+            <a href="/resources/" class="hover:text-red-200 flex items-center gap-1">📚 Resources</a>
+            <a href="/reports/" class="hover:text-red-200 flex items-center gap-1">🏢 Dashboard</a>
+        </div>
+
+        <div>
+            {% if user.is_authenticated %}
+                <form action="/logout/" method="post" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" 
+                            class="flex items-center gap-2 text-red-200 hover:text-red-300 font-medium px-5 py-2 rounded-xl hover:bg-red-700 transition">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </form>
+            {% else %}
+                <a href="/login/" 
+                   class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-3xl font-medium flex items-center gap-2">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div class="md:hidden bg-white border-t px-6 py-4">
+        <div class="flex flex-col gap-4 text-base font-medium">
+            <a href="/report/" class="flex items-center gap-3">📄 Report Incident</a>
+            <a href="/track/" class="flex items-center gap-3">🔍 Track Report</a>
+            <a href="/resources/" class="flex items-center gap-3">📚 Resources</a>
+            <a href="/reports/" class="flex items-center gap-3">🏢 Dashboard</a>
+            
+            {% if user.is_authenticated %}
+                <form action="/logout/" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="flex items-center gap-3 text-red-600">🚪 Logout</button>
+                </form>
+            {% else %}
+                <a href="/login/" class="flex items-center gap-3">🔑 Login</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<!-- Global Toast Container (Important for interactive replies) -->
+<div id="toastContainer" class="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3"></div>
+
+<!-- Main Content -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    {% block content %}{% endblock %}
+</main>
+
+<!-- Footer -->
+<footer class="bg-gray-900 text-white py-8 mt-12">
+    <div class="max-w-7xl mx-auto px-6 text-center">
+        <p class="text-sm">&copy; 2026 Tigray GBV Support System. All rights reserved.</p>
+    </div>
+</footer>
+
+<!-- Global JavaScript for Interactivity -->
+<script>
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast flex items-center gap-3 px-6 py-4 rounded-3xl shadow-xl text-white text-sm font-medium ${type === 'success' ? 'bg-teal-600' : 'bg-red-600'}`;
+    toast.innerHTML = `
+        ${type === 'success' ? '✅' : '❌'} 
+        <span>${message}</span>
+    `;
+    document.getElementById('toastContainer').appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.transition = 'all 0.3s ease';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(20px)';
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
+}
+
+window.showToast = showToast;
+</script>
+
+</body>
+</html>

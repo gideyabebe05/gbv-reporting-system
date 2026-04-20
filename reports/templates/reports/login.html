@@ -1,27 +1,56 @@
+{% extends 'reports/base.html' %}
 
-<div class="form-container">
-    <div class="form-card">
-        <div class="form-header">
-            <span class="icon">🔑</span>
-            <h1>Organization Login</h1>
-            <p class="subtitle">Access case management dashboard</p>
-        </div>
+{% block title %}Login - Tigray GBV Support{% endblock %}
 
-        <form method="POST">
+{% block content %}
+<div class="max-w-md mx-auto mt-16">
+    <div class="bg-white rounded-3xl shadow-xl p-10 text-center">
+        <div class="mx-auto w-16 h-16 bg-teal-600 rounded-2xl flex items-center justify-center text-4xl mb-6">🛡️</div>
+        
+        <h1 class="text-3xl font-bold mb-2">Welcome Back</h1>
+        <p class="text-gray-600">Sign in to access the Case Management Dashboard</p>
+
+        {% if error %}
+            <div class="mt-6 bg-red-50 text-red-600 p-4 rounded-2xl text-sm">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" class="mt-8">
             {% csrf_token %}
             
-            {{ form.as_p }}
-            
-            <button type="submit" class="submit-btn">
+            <!-- Username Field -->
+            <div class="mb-6 text-left">
+                <label class="block text-sm font-medium mb-2">Username</label>
+                <input type="text" name="username" 
+                       class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:border-teal-500">
+            </div>
+
+            <!-- Email Field (Optional) -->
+            <div class="mb-6 text-left">
+                <label class="block text-sm font-medium mb-2">Email Address (or use username above)</label>
+                <input type="email" name="email" 
+                       class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:border-teal-500">
+            </div>
+
+            <div class="mb-6 text-left">
+                <label class="block text-sm font-medium mb-2">Password</label>
+                <input type="password" name="password" required 
+                       class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:border-teal-500">
+            </div>
+
+            <button type="submit" 
+                    class="w-full bg-teal-600 hover:bg-teal-700 text-white py-4 rounded-3xl font-semibold text-lg transition">
                 Login Securely
             </button>
         </form>
 
-        <div class="text-center mt-6">
-            <p class="text-sm text-gray-500">
-                Only authorized support organizations can access this area.<br>
-                <span class="text-green-700">Confidential • Secure</span>
-            </p>
-        </div>
+        <p class="text-center mt-8 text-gray-600">
+            Don't have an account? 
+            <a href="/signup/" class="text-teal-600 font-medium">Create one</a>
+        </p>
+
+        <p class="text-center mt-6">
+            <a href="/report/" class="text-teal-600 text-sm">← Back to Public Reporting</a>
+        </p>
     </div>
 </div>
+{% endblock %}

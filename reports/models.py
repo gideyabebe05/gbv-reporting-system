@@ -2,124 +2,77 @@ import uuid
 from django.db import models
 from django.contrib.auth.models import User
 
-
 class Report(models.Model):
-    """
-    Main model for GBV incident reports.
-    """
-    STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('reviewed', 'Reviewed'),
-        ('in_progress', 'In Progress'),
-        ('resolved', 'Resolved'),
-    ]
+    report_id = models.CharField(max_length=20, unique=True, blank=True, db_index=True)
+    tracking_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, db_index=True)
 
     INCIDENT_TYPE_CHOICES = [
         ('physical', 'Physical Violence'),
         ('sexual', 'Sexual Violence'),
-        ('psychological', 'Psychological/Emotional Abuse'),
+        ('psychological', 'Psychological / Emotional Abuse'),
         ('economic', 'Economic Abuse'),
         ('harmful_practice', 'Harmful Traditional Practice'),
         ('other', 'Other'),
     ]
 
-    tracking_id = models.UUIDField(
-        default=uuid.uuid4,
-        editable=False,
-        unique=True,
-        db_index=True
-    )
+    incident_type = models.CharField(max_length=50, choices=INCIDENT_TYPE_CHOICES)
+    description = models.TextField()
+    location = models.CharField(max_length=255)
+    incident_date = models.DateField(null=True, blank=True)
 
-    incident_type = models.CharField(
-        max_length=50,
-        choices=INCIDENT_TYPE_CHOICES,
-        verbose_name="Type of Violence"
-    )
-    description = models.TextField(verbose_name="Description of the Incident")
-    location = models.CharField(
-        max_length=255,
-        verbose_name="Location (Zone/Woreda in Tigray)"
-    )
-    # ← THIS IS THE IMPORTANT CHANGE
-    incident_date = models.DateField(
-        verbose_name="Date of Incident",
-        null=True,
-        blank=True
-    )
+    is_anonymous = models.BooleanField(default=True)
+    name = models.CharField(max_length=100, blank=True, null=True)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    consent_to_followup = models.BooleanField(default=False)
 
-    is_anonymous = models.BooleanField(default=True, verbose_name="Report Anonymously")
-    name = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True,
-        verbose_name="Full Name (optional)"
-    )
-    phone = models.CharField(
-        max_length=20,
-        blank=True,
-        null=True,
-        verbose_name="Phone Number (optional)"
-    )
-    consent_to_followup = models.BooleanField(
-        default=False,
-        verbose_name="I consent to follow-up contact"
-    )
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('in_progress', 'In Progress'),
+        ('resolved', 'Resolved'),
+    ]
 
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default='pending'
-    )
-    assigned_to = models.ForeignKey(
-        User,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="assigned_reports"
-    )
-    notes = models.TextField(blank=True, null=True, verbose_name="Internal Notes")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    notes = models.TextField(blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        ordering = ['-created_at']
-        verbose_name = "GBV Report"
-        verbose_name_plural = "GBV Reports"
+    def save(self, *args, **kwargs):
+        if not self.report_id:
+            self.report_id = f"GBV-{str(uuid.uuid4())[:8].upper()}"
+        if self.is_anonymous:
+            self.name = None
+            self.phone = None
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Report #{self.tracking_id} - {self.get_incident_type_display()} ({self.status})"
-
+        return f"{self.report_id} - {self.get_incident_type_display()}"
 
 class Resource(models.Model):
-    """
-    Support resources
-    """
     RESOURCE_TYPE_CHOICES = [
-        ('medical', 'Medical / Health Services'),
-        ('legal', 'Legal Aid'),
-        ('counseling', 'Psychological Counseling'),
-        ('shelter', 'Safe Shelter'),
-        ('hotline', 'Emergency Hotline'),
-        ('ngo', 'NGO / Support Organization'),
+        ('medical', 'Medical'),
+        ('legal', 'Legal'),
+        ('counseling', 'Counseling'),
+        ('shelter', 'Shelter'),
+        ('hotline', 'Hotline'),
+        ('ngo', 'NGO'),
         ('other', 'Other'),
     ]
 
-    name = models.CharField(max_length=150, verbose_name="Resource Name")
-    type = models.CharField(
-        max_length=50,
-        choices=RESOURCE_TYPE_CHOICES,
-        verbose_name="Service Type"
-    )
-    description = models.TextField(blank=True, verbose_name="Brief Description")
-    location = models.CharField(max_length=200, verbose_name="Location (Tigray Region)")
-    phone = models.CharField(max_length=20, verbose_name="Contact Phone")
+    name = models.CharField(max_length=150)
+    type = models.CharField(max_length=50, choices=RESOURCE_TYPE_CHOICES)
+    location = models.CharField(max_length=200)
+    phone = models.CharField(max_length=20, blank=True, null=True)   # Made nullable
     email = models.EmailField(blank=True, null=True)
-    website = models.URLField(blank=True, null=True)
+    description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
 
     class Meta:
         ordering = ['name']
-
-    def __str__(self):
-        return f"{self.name} ({self.get_type_display()})"

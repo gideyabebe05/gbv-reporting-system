@@ -18,6 +18,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'reports',
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [
@@ -76,4 +77,26 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'reports' / 'static']
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# ====================== LOGIN SETTINGS ======================
+from django.urls import reverse_lazy
+
+LOGIN_REDIRECT_URL = reverse_lazy('reports:report_list')
+LOGIN_URL = reverse_lazy('reports:login')
+LOGOUT_REDIRECT_URL = reverse_lazy('reports:login')
+
+
+# ====================== SECURITY SETTINGS ======================
+# Security headers and protections
+X_FRAME_OPTIONS = 'DENY'
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# Cookie security (False for development, change to True when using HTTPS)
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+
+# Additional security (recommended for production)
+SECURE_SSL_REDIRECT = False  # Change to True when deploying with HTTPS
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True

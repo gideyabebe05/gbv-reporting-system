@@ -1,43 +1,106 @@
 {% extends 'reports/base.html' %}
+
+{% block title %}Case Management Dashboard{% endblock %}
+
 {% block content %}
-<div class="max-w-6xl mx-auto mt-12 px-6">
-    <h2 class="text-3xl font-bold mb-6">Reported Cases</h2>
-    
-    <div class="bg-white rounded-3xl shadow-xl overflow-hidden">
+<div class="max-w-7xl mx-auto px-4">
+    <h1 class="text-3xl font-bold mb-8">📋 Case Management Dashboard</h1>
+
+    <div class="bg-white rounded-3xl shadow overflow-hidden">
         <table class="w-full">
-            <thead class="bg-gray-100">
+            <thead class="bg-teal-600 text-white">
                 <tr>
-                    <th class="px-6 py-5 text-left">Date</th>
-                    <th class="px-6 py-5 text-left">Type</th>
-                    <th class="px-6 py-5 text-left">Location</th>
-                    <th class="px-6 py-5 text-left">Status</th>
-                    <th class="px-6 py-5 text-center">Action</th>
+                    <th class="p-5 text-left">Tracking ID</th>
+                    <th class="p-5 text-left">Date</th>
+                    <th class="p-5 text-left">Type</th>
+                    <th class="p-5 text-left">Location</th>
+                    <th class="p-5 text-left">Status</th>
+                    <th class="p-5 text-center">Reply to Reporter</th>
                 </tr>
             </thead>
-            <tbody class="divide-y">
+            <tbody>
                 {% for report in reports %}
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-5">{{ report.created_at|date:"d M Y" }}</td>
-                    <td class="px-6 py-5">{{ report.incident_type }}</td>
-                    <td class="px-6 py-5">{{ report.location }}</td>
-                    <td class="px-6 py-5">
-                        <span class="px-3 py-1 rounded-full text-sm
-                            {% if report.status == 'Pending' %}bg-yellow-100 text-yellow-700
-                            {% elif report.status == 'Assigned' %}bg-blue-100 text-blue-700
-                            {% else %}bg-green-100 text-green-700{% endif %}">
-                            {{ report.status }}
+                <tr class="border-t hover:bg-gray-50" id="row-{{ report.pk }}">
+                    <td class="p-5 font-mono">{{ report.report_id }}</td>
+                    <td class="p-5">{{ report.created_at|date:"d M Y" }}</td>
+                    <td class="p-5">{{ report.get_incident_type_display }}</td>
+                    <td class="p-5">{{ report.location }}</td>
+                    <td class="p-5">
+                        <span class="px-6 py-1 rounded-full text-sm font-semibold 
+                            {% if report.status == 'resolved' %}bg-green-100 text-green-700{% else %}bg-orange-100 text-orange-700{% endif %}">
+                            {{ report.get_status_display }}
                         </span>
                     </td>
-                    <td class="px-6 py-5 text-center">
-                        <a href="{% url 'report_detail' report.id %}" 
-                           class="text-green-700 hover:underline font-medium">View / Update</a>
+                    <td class="p-5">
+                        <form class="reply-form" data-pk="{{ report.pk }}">
+                            {% csrf_token %}
+                            <textarea name="notes" rows="2" class="w-full border border-gray-300 rounded-2xl p-3 text-sm" 
+                                      placeholder="Write reply to the reporter...">{{ report.notes|default:"" }}</textarea>
+                            
+                            <div class="flex gap-3 mt-3">
+                                <select name="status" class="flex-1 border border-gray-300 rounded-2xl p-3 text-sm">
+                                    <option value="pending" {% if report.status == 'pending' %}selected{% endif %}>Pending</option>
+                                    <option value="in_progress" {% if report.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                                    <option value="resolved" {% if report.status == 'resolved' %}selected{% endif %}>Resolved</option>
+                                </select>
+                                
+                                <button type="submit" class="reply-btn bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-2xl text-sm font-medium flex items-center justify-center gap-2">
+                                    <span class="btn-text">Send Reply</span>
+                                    <span class="spinner hidden animate-spin">⟳</span>
+                                </button>
+                            </div>
+                        </form>
                     </td>
                 </tr>
-                {% empty %}
-                <tr><td colspan="5" class="px-6 py-12 text-center text-gray-500">No reports yet</td></tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+
+<script>
+// Make reply interactive with AJAX
+document.querySelectorAll('.reply-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const btn = form.querySelector('.reply-btn');
+        const text = btn.querySelector('.btn-text');
+        const spinner = btn.querySelector('.spinner');
+        const pk = form.dataset.pk;
+
+        // Show loading
+        text.classList.add('hidden');
+        spinner.classList.remove('hidden');
+        btn.disabled = true;
+
+        const formData = new FormData(form);
+
+        fetch(`/report/update/${pk}/`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                showToast('Reply sent successfully!', 'success');
+                // Optional: refresh the page to show updated status
+                setTimeout(() => location.reload(), 800);
+            } else {
+                showToast('Failed to send reply', 'error');
+            }
+        })
+        .catch(() => {
+            showToast('Error sending reply', 'error');
+        })
+        .finally(() => {
+            text.classList.remove('hidden');
+            spinner.classList.add('hidden');
+            btn.disabled = false;
+        });
+    });
+});
+</script>
 {% endblock %}

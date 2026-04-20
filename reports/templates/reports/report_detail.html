@@ -2,8 +2,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.http import JsonResponse   # ← NEW
 
-from .models import Report, Resource
+from .models import Report, Resource, Message   # ← Message added
 from .forms import ReportForm
 from django.contrib.auth.models import User
 
@@ -26,7 +27,6 @@ def report_form(request):
 
             report.save()
 
-            # ✅ NEW: Send notification to case managers
             messages.success(request, f'🔔 New report received! Tracking ID: {report.report_id}')
 
             return redirect('reports:report_success', tracking_id=report.report_id)
@@ -42,10 +42,11 @@ def report_success(request, tracking_id):
     return render(request, 'reports/report_success.html', {'report': report, 'tracking_id': report.report_id})
 
 
-# 🔍 TRACK REPORT (Public - No login needed)
+# 🔍 TRACK REPORT (Public - No login needed) - NOW WITH CHAT MESSAGES
 def track_report(request):
     report = None
     error = None
+    messages_list = []
 
     if request.method == 'POST':
         tracking_input = request.POST.get('report_id', '').strip().upper()
@@ -53,9 +54,11 @@ def track_report(request):
         if tracking_input:
             try:
                 report = Report.objects.get(report_id=tracking_input)
+                messages_list = report.messages.all()
             except Report.DoesNotExist:
                 try:
                     report = Report.objects.get(tracking_id=tracking_input)
+                    messages_list = report.messages.all()
                 except Report.DoesNotExist:
                     error = "❌ No report found with this Tracking ID."
         else:
@@ -63,7 +66,8 @@ def track_report(request):
 
     return render(request, 'reports/track_report.html', {
         'report': report,
-        'error': error
+        'error': error,
+        'messages': messages_list
     })
 
 
@@ -75,7 +79,6 @@ def user_login(request):
         password = request.POST.get("password", "")
 
         if login_input and password:
-            # Try as email first
             try:
                 user_obj = User.objects.get(email=login_input)
                 user = authenticate(request, username=user_obj.username, password=password)
@@ -85,7 +88,6 @@ def user_login(request):
             except User.DoesNotExist:
                 pass
 
-            # Try as username
             user = authenticate(request, username=login_input, password=password)
             if user is not None:
                 login(request, user)
@@ -116,11 +118,15 @@ def report_list(request):
     })
 
 
-# 📄 REPORT DETAIL (Protected)
+# 📄 REPORT DETAIL (Protected) - NOW WITH CHAT MESSAGES
 @login_required(login_url='reports:login')
 def report_detail(request, pk):
     report = get_object_or_404(Report, pk=pk)
-    return render(request, 'reports/report_detail.html', {'report': report})
+    messages_list = report.messages.all()
+    return render(request, 'reports/report_detail.html', {
+        'report': report,
+        'messages': messages_list
+    })
 
 
 # ✏️ UPDATE REPORT (Protected)
@@ -166,3 +172,68 @@ def signup(request):
             return redirect('reports:home')
 
     return render(request, 'reports/signup.html', {'error': error})
+
+
+# ===================================================================
+# 🔥 TWO-WAY CHAT FUNCTIONS
+# ===================================================================
+
+# Case Manager sends message to Reporter
+@login_required(login_url='reports:login')
+def send_message_manager(request, pk):
+    report = get_object_or_404(Report, pk=pk)
+    if request.method == 'POST':
+        text = request.POST.get('message')
+        if text:
+            Message.objects.create(
+                report=report,
+                sender_type='manager',
+                message_text=text
+            )
+            messages.success(request, 'Message sent to reporter!')
+    return redirect('reports:report_detail', pk=pk)
+
+
+# Reporter sends message to Case Manager
+def send_message_reporter(request, report_id):
+    report = Report.objects.filter(report_id=report_id).first()
+    if report and request.method == 'POST':
+        text = request.POST.get('message')
+        if text:
+            Message.objects.create(
+                report=report,
+                sender_type='reporter',
+                message_text=text
+            )
+    return redirect('reports:track_report')
+
+
+# 🔥 Interactive "Message this Supporter" from Resources page
+def request_help(request):
+    if request.method == 'POST':
+        import json
+        try:
+            data = json.loads(request.body)
+            report_id = data.get('report_id')
+            message_text = data.get('message_text', 'I would like to speak with a supporter. Please help me.')
+
+            report = Report.objects.filter(report_id=report_id).first()
+            if not report:
+                return JsonResponse({'success': False, 'error': 'Report ID not found'}, status=404)
+
+            Message.objects.create(
+                report=report,
+                sender_type='reporter',
+                message_text=message_text
+            )
+
+            return JsonResponse({
+                'success': True,
+                'supporter_name': 'Supporter',
+                'report_id': report.report_id
+            })
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+    return JsonResponse({'success': False, 'error': 'Invalid request'}, status=400)
